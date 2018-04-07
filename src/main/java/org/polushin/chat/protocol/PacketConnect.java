@@ -1,41 +1,38 @@
 package org.polushin.chat.protocol;
 
+import org.polushin.chat.ProtocolCommunicator;
+
 /**
- * Отправитель: сервер
- * Назначение: Уведомляет клиент о версии протокола сервера и о методе общения
- * пакетами, которые хочет сервер. Данный пакет всегда отправляется при
- * подключении и всегда при помощи class-bytes-serialize.
+ * Отправитель: клиент
+ * Назначение: Уведомляет сервер о версии протокола клиента и о методе общения
+ * пакетами, которые хочет клиент. Данный пакет всегда отправляется при
+ * подключении и всегда в JSON виде.
  */
 public class PacketConnect implements Packet {
 
-	public static final int PROTOCOL_VERSION = 1;
-
-	public static final boolean USE_JSON = true;
-	public static final boolean USE_BYTE = false;
-
-	private final boolean useJson;
+	private final ProtocolCommunicator.CommunicateType type;
 	private final int version;
 
 	/**
-	 * @param useJson Использовать JSON формат общения или class-bytes-serialize.
+	 * @param type Тип коммуникации пакетами.
 	 */
-	public PacketConnect(boolean useJson) {
-		this(useJson, PROTOCOL_VERSION);
+	public PacketConnect(ProtocolCommunicator.CommunicateType type) {
+		this(type, ProtocolCommunicator.PROTOCOL_VERSION);
 	}
 
 	/**
-	 * Для поддержки устаревших протоколов.
+	 * Для поддержки протоколов иной версии.
 	 *
-	 * @param useJson Использовать JSON формат общения или class-bytes-serialize.
+	 * @param type Тип коммуникации пакетами.
 	 * @param version Версия протокола.
 	 */
-	public PacketConnect(boolean useJson, int version) {
-		this.useJson = useJson;
+	public PacketConnect(ProtocolCommunicator.CommunicateType type, int version) {
+		this.type = type;
 		this.version = version;
 	}
 
-	public boolean useJson() {
-		return useJson;
+	public ProtocolCommunicator.CommunicateType getCommunicateType() {
+		return type;
 	}
 
 	public int getVersion() {
