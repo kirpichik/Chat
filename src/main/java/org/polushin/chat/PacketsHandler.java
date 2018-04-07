@@ -22,8 +22,9 @@ public interface PacketsHandler {
 	 * Обработчик исключения при чтении/записи в пакетов.
 	 *
 	 * @param e Обрабатываемое исключение.
+	 * @param communicator Коммуникатор, который получил данный пакет.
 	 */
-	default void ioException(IOException e) {
+	default void ioException(IOException e, ProtocolCommunicator communicator) {
 		e.printStackTrace(System.err);
 	}
 
@@ -31,8 +32,9 @@ public interface PacketsHandler {
 	 * Обработчик исключения при получении ошибочного пакета.
 	 *
 	 * @param e Обрабатываемое исключение.
+	 * @param communicator Коммуникатор, который получил данный пакет.
 	 */
-	default void invalidPacketException(Packet.InvalidPacketException e) {
+	default void invalidPacketException(Packet.InvalidPacketException e, ProtocolCommunicator communicator) {
 		e.printStackTrace(System.err);
 	}
 

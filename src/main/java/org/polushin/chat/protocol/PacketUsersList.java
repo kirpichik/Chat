@@ -1,6 +1,6 @@
 package org.polushin.chat.protocol;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Отправитель: сервер
@@ -8,18 +8,18 @@ import java.util.Set;
  */
 public class PacketUsersList implements Packet {
 
-	private final Set<String> users;
+	private final Collection<String> users;
 
 	/**
 	 * @param users Список онлайн пользователей.
 	 */
-	public PacketUsersList(Set<String> users) {
+	public PacketUsersList(Collection<String> users) {
 		if (users == null)
 			throw new IllegalArgumentException("Users set cannot be null!");
 		this.users = users;
 	}
 
-	public Set<String> getUsers() {
+	public Collection<String> getUsers() {
 		return users;
 	}
 }

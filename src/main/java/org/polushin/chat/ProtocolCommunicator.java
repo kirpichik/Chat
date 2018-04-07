@@ -91,7 +91,7 @@ public class ProtocolCommunicator {
 	/**
 	 * Останавливает обработчиков входящих и исходящих пакетов.
 	 */
-	public void stopHandlers() {
+	public void close() {
 		inputHandler.interrupt();
 		outputHandler.interrupt();
 		try {
@@ -137,7 +137,7 @@ public class ProtocolCommunicator {
 
 		@Override
 		public void run() {
-			while (true) {
+			while (!interrupted) {
 				try {
 					Packet packet;
 					switch (defaultCommunicationType) {
@@ -153,13 +153,11 @@ public class ProtocolCommunicator {
 
 					handler.inputPacket(packet, ProtocolCommunicator.this);
 				} catch (Packet.InvalidPacketException e) {
-					handler.invalidPacketException(e);
+					handler.invalidPacketException(e, ProtocolCommunicator.this);
 				} catch (IOException e) {
-					if (interrupted)
-						return;
-					handler.ioException(e);
-				} catch (InterruptedException e) {
-					return;
+					if (!interrupted)
+						handler.ioException(e, ProtocolCommunicator.this);
+				} catch (InterruptedException ignored) {
 				}
 			}
 		}
@@ -179,7 +177,7 @@ public class ProtocolCommunicator {
 
 		@Override
 		public void run() {
-			while (true) {
+			while (!interrupted) {
 				try {
 					SendingPacket packet = outputQueue.take();
 					switch (packet.type) {
@@ -192,12 +190,10 @@ public class ProtocolCommunicator {
 						default:
 							throw new IllegalStateException("Unknown communication type!");
 					}
-				} catch (InterruptedException e) {
-					return;
 				} catch (IOException e) {
-					if (interrupted)
-						return;
-					handler.ioException(e);
+					if (!interrupted)
+						handler.ioException(e, ProtocolCommunicator.this);
+				} catch (InterruptedException ignored) {
 				}
 			}
 		}

@@ -31,4 +31,11 @@ public class PacketLogin implements Packet {
 	public String getUsername() {
 		return username;
 	}
+
+	/**
+	 * @return Валидно ли имя пользователя.
+	 */
+	public boolean validateUsername() {
+		return username.length() <= VALID_LENGTH && VALID_USERNAME.matcher(username).matches();
+	}
 }
