@@ -75,10 +75,12 @@ public class Client implements PacketsHandler {
 			handler.disconnected();
 			return;
 		}
-		try {
-			communicator.sendPacket(new PacketDisconnect(uuid));
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		if (uuid != null) {
+			try {
+				communicator.sendPacket(new PacketDisconnect(uuid));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		communicator.close();
 		communicator = null;
