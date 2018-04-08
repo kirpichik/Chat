@@ -109,8 +109,7 @@ public class ProtocolCommunicator {
 		try {
 			inputHandler.join();
 			outputHandler.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		} catch (InterruptedException ignored) {
 		}
 	}
 
