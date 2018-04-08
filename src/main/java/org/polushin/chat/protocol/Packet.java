@@ -89,7 +89,7 @@ public interface Packet extends Serializable {
 			String type = object.get("type").getAsString();
 			Class<?> clazz;
 			try {
-				clazz = Class.forName(PACKET_PREFIX + type);
+				clazz = Class.forName(Packet.class.getName() + type);
 			} catch (ClassNotFoundException e) {
 				clazz = Class.forName(type);
 			}

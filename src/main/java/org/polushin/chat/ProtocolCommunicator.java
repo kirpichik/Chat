@@ -6,11 +6,19 @@ import org.polushin.chat.protocol.Packet;
 import java.io.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Коммуникатор для приема/передачи пакетов между клиетом/сервером.
  */
 public class ProtocolCommunicator {
+
+	private static final Logger log = Logger.getLogger("Protocol");
+
+	static {
+		log.setLevel(Level.WARNING);
+	}
 
 	public static final int PROTOCOL_VERSION = 1;
 	private static final int OUTPUT_QUEUE_SIZE = 10;
@@ -37,9 +45,10 @@ public class ProtocolCommunicator {
 			throw new IllegalArgumentException("Input stream cannot be null!");
 		if (output == null)
 			throw new IllegalArgumentException("Output stream cannot be null!");
+		log.info("Communicator enabled.");
 		this.handler = handler;
-		inputHandler = new AsyncInputHandler(input);
 		outputHandler = new AsyncOutputHandler(output);
+		inputHandler = new AsyncInputHandler(input);
 	}
 
 	/**
@@ -85,7 +94,9 @@ public class ProtocolCommunicator {
 	public void sendPacket(Packet packet, CommunicateType type) throws InterruptedException {
 		if (packet == null)
 			throw new IllegalArgumentException("Packet cannot be null!");
+		log.info("Putin packet " + packet.getType() + " using " + type);
 		outputQueue.put(new SendingPacket(packet, type));
+		log.info("Queued packet " + packet.getType() + " using " + type);
 	}
 
 	/**
@@ -93,6 +104,7 @@ public class ProtocolCommunicator {
 	 */
 	public void close() {
 		inputHandler.interrupt();
+		// TODO - сделать отправку финального пакета.
 		outputHandler.interrupt();
 		try {
 			inputHandler.join();
@@ -133,6 +145,7 @@ public class ProtocolCommunicator {
 		AsyncInputHandler(InputStream stream) throws IOException {
 			super(stream);
 			inputStream = new ObjectInputStream(stream);
+			start();
 		}
 
 		@Override
@@ -150,6 +163,8 @@ public class ProtocolCommunicator {
 						default:
 							throw new IllegalStateException("Unknown communication type!");
 					}
+
+					log.info("Received packet " + packet.getType() + " using " + defaultCommunicationType);
 
 					handler.inputPacket(packet, ProtocolCommunicator.this);
 				} catch (Packet.InvalidPacketException e) {
@@ -173,6 +188,7 @@ public class ProtocolCommunicator {
 		AsyncOutputHandler(OutputStream stream) throws IOException {
 			super(stream);
 			outputStream = new ObjectOutputStream(stream);
+			start();
 		}
 
 		@Override
@@ -180,6 +196,7 @@ public class ProtocolCommunicator {
 			while (!interrupted) {
 				try {
 					SendingPacket packet = outputQueue.take();
+					log.info("Sending packet " + packet.packet.getType() + " using " + packet.type);
 					switch (packet.type) {
 						case BYTES:
 							packet.packet.toBytesStream(outputStream);
@@ -190,6 +207,7 @@ public class ProtocolCommunicator {
 						default:
 							throw new IllegalStateException("Unknown communication type!");
 					}
+					log.info("Packet " + packet.packet.getType() + " sent using " + packet.type);
 				} catch (IOException e) {
 					if (!interrupted)
 						handler.ioException(e, ProtocolCommunicator.this);

@@ -6,11 +6,11 @@ import java.util.regex.Pattern;
  * Отправитель: клиент
  * Назначение: Запрашивает у сервера уникальный ключ для доступа к чату,
  * отправляя ему предпочитаемое имя пользователя.
- * Валидными считаются имена, соответствующие: [_0-9a-zA-Z]+ и не длиннее 20 символов.
+ * Валидными считаются имена, соответствующие: [_-0-9a-zA-Z]+ и не длиннее 20 символов.
  */
 public class PacketLogin implements Packet {
 
-	public static final Pattern VALID_USERNAME = Pattern.compile("[_0-9a-zA-Z]+");
+	public static final Pattern VALID_USERNAME = Pattern.compile("[_\\-0-9a-zA-Z]+");
 	public static final int VALID_LENGTH = 20;
 
 	private final String username;

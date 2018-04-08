@@ -101,7 +101,7 @@ public class Server extends Thread implements PacketsHandler {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		communicator.close();
+		//communicator.close();
 	}
 
 	@Override
@@ -130,7 +130,7 @@ public class Server extends Thread implements PacketsHandler {
 	 */
 	private void sendFatalError(ProtocolCommunicator communicator, String reason) throws InterruptedException {
 		communicator.sendPacket(new PacketFatalError(reason));
-		communicator.close();
+		//communicator.close();
 	}
 
 	/**
@@ -181,11 +181,16 @@ public class Server extends Thread implements PacketsHandler {
 			sendFatalError(communicator, "Invalid username: " + packet.getUsername());
 			return;
 		}
+		if (users.values().contains(packet.getUsername())) {
+			removeCommunicator(communicator);
+			sendFatalError(communicator, "Username \"" + packet.getUsername() + "\" exists.");
+			return;
+		}
+		broadcastPacket(new PacketUsersListUpdate(true, packet.getUsername()));
 		UUID uuid = UUID.randomUUID();
 		users.putIfAbsent(uuid, packet.getUsername());
 		communicators.put(communicator, uuid);
 		communicator.sendPacket(new PacketSuccessLogin(uuid));
-		broadcastPacket(new PacketUsersListUpdate(true, packet.getUsername()));
 	}
 
 	private void packetGetUsersList(PacketGetUsersList packet, ProtocolCommunicator communicator) throws

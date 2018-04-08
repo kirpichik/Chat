@@ -13,7 +13,6 @@ public abstract class AsyncDataHandler extends Thread {
 
 	protected AsyncDataHandler(Closeable stream) {
 		closeable = stream;
-		start();
 	}
 
 	@Override
