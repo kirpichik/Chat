@@ -104,7 +104,6 @@ public class ProtocolCommunicator {
 	 */
 	public void close() {
 		inputHandler.interrupt();
-		// TODO - сделать отправку финального пакета.
 		outputHandler.interrupt();
 		try {
 			inputHandler.join();

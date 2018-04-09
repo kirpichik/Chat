@@ -7,8 +7,7 @@ import org.polushin.chat.protocol.*;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -17,10 +16,12 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class Server extends Thread implements PacketsHandler {
 
+	private static final int MESSAGES_HISTORY_SIZE = 20;
 	private static final UUID DEFAULT_UUID = new UUID(0, 0);
 
 	private final int maxConnections;
 	private final ServerSocket socket;
+	private final Deque<SavedMessage> savedMessages = new ArrayDeque<>(MESSAGES_HISTORY_SIZE);
 	private final ConcurrentMap<UUID, String> users = new ConcurrentHashMap<>();
 	private final ConcurrentMap<ProtocolCommunicator, UUID> communicators = new ConcurrentHashMap<>();
 
@@ -191,6 +192,8 @@ public class Server extends Thread implements PacketsHandler {
 		users.putIfAbsent(uuid, packet.getUsername());
 		communicators.put(communicator, uuid);
 		communicator.sendPacket(new PacketSuccessLogin(uuid));
+		for (SavedMessage message : savedMessages)
+			communicator.sendPacket(new PacketNewMessage(message.sender, message.message));
 	}
 
 	private void packetGetUsersList(PacketGetUsersList packet, ProtocolCommunicator communicator) throws
@@ -212,7 +215,13 @@ public class Server extends Thread implements PacketsHandler {
 			return;
 		}
 
-		broadcastPacket(new PacketNewMessage(users.get(packet.getUuid()), packet.getMessage()));
+		SavedMessage message = new SavedMessage(users.get(packet.getUuid()), packet.getMessage());
+
+		if (savedMessages.size() == MESSAGES_HISTORY_SIZE)
+			savedMessages.poll();
+		savedMessages.push(message);
+
+		broadcastPacket(new PacketNewMessage(message.sender, message.message));
 	}
 
 	private void packetDisconnect(PacketDisconnect packet, ProtocolCommunicator communicator) throws
@@ -226,6 +235,16 @@ public class Server extends Thread implements PacketsHandler {
 		removeCommunicator(communicator);
 		communicator.sendPacket(new PacketGoodbye());
 		communicator.close();
+	}
+
+	private static class SavedMessage {
+		private final String sender;
+		private final String message;
+
+		public SavedMessage(String sender, String message) {
+			this.sender = sender;
+			this.message = message;
+		}
 	}
 
 }

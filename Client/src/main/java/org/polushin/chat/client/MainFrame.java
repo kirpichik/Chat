@@ -220,62 +220,74 @@ public class MainFrame extends JFrame {
 
 		@Override
 		public void connectionEstablished(Collection<String> onlineUsers) {
-			messagesArea.setText(String.format("%s\nПодключено к %s", messagesArea.getText(), address.getValue()));
-			messageField.setEnabled(true);
-			disconnectButton.setEnabled(true);
-			sendButton.setEnabled(true);
-			currentOnline.clear();
-			currentOnline.addAll(onlineUsers);
-			MainFrame.this.onlineUsers.clear();
-			for (String user : currentOnline)
-				MainFrame.this.onlineUsers.addElement(user);
+			SwingUtilities.invokeLater(() -> {
+				messagesArea.setText(String.format("%s\nПодключено к %s", messagesArea.getText(), address.getValue()));
+				messageField.setEnabled(true);
+				disconnectButton.setEnabled(true);
+				sendButton.setEnabled(true);
+				currentOnline.clear();
+				currentOnline.addAll(onlineUsers);
+				MainFrame.this.onlineUsers.clear();
+				for (String user : currentOnline)
+					MainFrame.this.onlineUsers.addElement(user);
+            });
 		}
 
 		@Override
 		public void newMessage(String username, String message) {
-			messagesArea.setText(String.format("%s\n[%s]: %s", messagesArea.getText(), username, message));
+			SwingUtilities.invokeLater(() -> {
+				messagesArea.setText(String.format("%s\n[%s]: %s", messagesArea.getText(), username, message));
+			});
 		}
 
 		@Override
 		public void onlineListUpdate(boolean isNew, String username) {
-			if (isNew) {
-				currentOnline.add(username);
-				onlineUsers.addElement(username);
-				messagesArea.setText(String.format("%s\n%s подключился.", messagesArea.getText(), username));
-			} else {
-				int index = currentOnline.indexOf(username);
-				if (index == -1)
-					return;
-				currentOnline.remove(index);
-				onlineUsers.remove(index);
-				messagesArea.setText(String.format("%s\n%s отключился.", messagesArea.getText(), username));
-			}
+			SwingUtilities.invokeLater(() -> {
+				if (isNew) {
+					currentOnline.add(username);
+					onlineUsers.addElement(username);
+					messagesArea.setText(String.format("%s\n%s подключился.", messagesArea.getText(), username));
+				} else {
+					int index = currentOnline.indexOf(username);
+					if (index == -1)
+						return;
+					currentOnline.remove(index);
+					onlineUsers.remove(index);
+					messagesArea.setText(String.format("%s\n%s отключился.", messagesArea.getText(), username));
+				}
+			});
 		}
 
 		@Override
 		public void fatalException(Exception e) {
-			e.printStackTrace();
-			disconnect();
-			JOptionPane.showMessageDialog(MainFrame.this, e.getMessage(), "Произошла ошибка: " + e.getClass(),
-			                              JOptionPane.ERROR_MESSAGE);
+			SwingUtilities.invokeLater(() -> {
+				e.printStackTrace();
+				disconnect();
+				JOptionPane.showMessageDialog(MainFrame.this, e.getMessage(), "Произошла ошибка: " + e.getClass(),
+						JOptionPane.ERROR_MESSAGE);
+			});
 		}
 
 		@Override
 		public void invalidPacketException(Packet.InvalidPacketException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(MainFrame.this, e.getMessage(), "Получен ошибочный пакет",
-			                              JOptionPane.ERROR_MESSAGE);
+			SwingUtilities.invokeLater(() -> {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(MainFrame.this, e.getMessage(), "Получен ошибочный пакет",
+						JOptionPane.ERROR_MESSAGE);
+			});
 		}
 
 		@Override
 		public void disconnected() {
-			currentOnline.clear();
-			onlineUsers.clear();
-			messagesArea.setText(String.format("%s\nОтключено.", messagesArea.getText()));
-			address.setEnabled(true);
-			username.setEnabled(true);
-			connectButton.setEnabled(true);
-			connectionType.setEnabled(true);
+			SwingUtilities.invokeLater(() -> {
+				currentOnline.clear();
+				onlineUsers.clear();
+				messagesArea.setText(String.format("%s\nОтключено.", messagesArea.getText()));
+				address.setEnabled(true);
+				username.setEnabled(true);
+				connectButton.setEnabled(true);
+				connectionType.setEnabled(true);
+			});
 		}
 	}
 
